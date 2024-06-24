@@ -4,33 +4,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+import { createCheckoutSessionAction } from "./action";
 import loading from "../../public/loading.gif";
 
 export default function Home() {
   const router = useRouter();
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: async (quantity: number) => {
-      const response = await fetch(
-        "https://api.alindor.tech/create-checkout-session/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            quantity: quantity,
-            user_email: "test@gmail.com",
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      return response.json();
-    },
+  const { mutateAsync, isPending, isError } = useMutation({
+    mutationFn: async (quantity: number) =>
+      createCheckoutSessionAction(quantity),
 
     onSuccess: (data) => {
       console.error("success:", data);
@@ -45,7 +27,7 @@ export default function Home() {
     },
   });
 
-  if (isPending) {
+  if (isPending || isError) {
     return (
       <div className="h-screen w-screen grid place-content-center ">
         <Image src={loading} alt="loading" />
